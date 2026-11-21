@@ -158,8 +158,8 @@ export const ProductEditorModal: React.FC<ProductEditorModalProps> = ({
       return;
     }
 
-    if (file.size > 10 * 1024 * 1024) {
-      setErrorMessage('File size exceeds 10MB limit. Please upload an optimized image.');
+    if (file.size > 25 * 1024 * 1024) {
+      setErrorMessage('File size exceeds 25MB limit. Please upload an optimized image.');
       return;
     }
 
@@ -170,7 +170,7 @@ export const ProductEditorModal: React.FC<ProductEditorModalProps> = ({
       const formData = new FormData();
       formData.append('image', file);
 
-      const token = localStorage.getItem('mc_admin_token') || sessionStorage.getItem('mc_admin_token');
+      const token = sessionStorage.getItem('mc_admin_token') || localStorage.getItem('mc_admin_token');
       const res = await fetch('/api/upload', {
         method: 'POST',
         headers: {
@@ -180,7 +180,7 @@ export const ProductEditorModal: React.FC<ProductEditorModalProps> = ({
       });
 
       const data = await res.json();
-      const chosenUrl = data.url || data.dataUri || data.fileUrl;
+      const chosenUrl = data.fileUrl || data.url || data.dataUri;
       if (res.ok && data.success && chosenUrl) {
         setForm(prev => {
           const updatedImages = [chosenUrl, ...prev.images.filter(x => x !== chosenUrl)];
@@ -192,7 +192,7 @@ export const ProductEditorModal: React.FC<ProductEditorModalProps> = ({
         });
         addToast('Image Uploaded', 'Product image uploaded and attached to card', 'success');
       } else {
-        setErrorMessage(data.error || 'Failed to upload image');
+        setErrorMessage(data.error || 'Failed to upload image. Please check authentication.');
       }
     } catch (err: any) {
       console.error('[Upload Error]:', err);
@@ -301,7 +301,7 @@ export const ProductEditorModal: React.FC<ProductEditorModalProps> = ({
     setIsSubmitting(true);
 
     try {
-      const token = localStorage.getItem('mc_admin_token') || sessionStorage.getItem('mc_admin_token');
+      const token = sessionStorage.getItem('mc_admin_token') || localStorage.getItem('mc_admin_token');
       const isEdit = !!product;
       const targetId = isEdit ? (product.productId || product.id || product._id) : `prod-${Date.now()}`;
       const url = isEdit ? `/api/products/${targetId}` : '/api/products';

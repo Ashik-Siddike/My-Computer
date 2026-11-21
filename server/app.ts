@@ -40,8 +40,8 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
 }));
-app.use(express.json({ limit: '15mb' }));
-app.use(express.urlencoded({ extended: true, limit: '15mb' }));
+app.use(express.json({ limit: '30mb' }));
+app.use(express.urlencoded({ extended: true, limit: '30mb' }));
 
 // Health Check & Database Status for Render / Uptime Monitoring
 const healthCheckHandler = (_req: Request, res: Response) => {
@@ -58,6 +58,7 @@ app.get('/api/health', healthCheckHandler);
 // Mount Routes
 app.use('/api/orders', ordersRouter);
 app.use('/api/products', productsRouter);
+app.use('/api/admin/products', productsRouter); // Direct mount for admin product management
 app.use('/api/categories', categoriesRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/auth', authRouter);
@@ -67,13 +68,25 @@ app.use('/api', uploadRouter); // for /api/media
 app.use('/api/settings', settingsRouter);
 app.use('/api', seedRouter);
 
-// Global Error Handler
+// Catch-all 404 for all /api requests - GUARANTEED VALID JSON (prevents HTML/empty body crashes)
+app.use('/api', (req: Request, res: Response) => {
+  res.status(404).json({
+    success: false,
+    error: `API route not found: ${req.method} ${req.originalUrl || req.url}`,
+  });
+});
+
+// Global Error Handler - ALWAYS RETURN JSON
 app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   console.error('[API Error]:', err);
-  res.status(err.status || 500).json({
-    success: false,
-    error: err.message || 'Internal Server Error',
-  });
+  const status = err.status || err.statusCode || (err.name === 'MulterError' ? 400 : 500);
+  if (!res.headersSent) {
+    res.status(status).json({
+      success: false,
+      error: err.message || 'Internal Server Error',
+      code: err.code || undefined,
+    });
+  }
 });
 
 export default app;

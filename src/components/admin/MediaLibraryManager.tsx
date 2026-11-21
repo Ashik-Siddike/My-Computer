@@ -87,9 +87,10 @@ export const MediaLibraryManager: React.FC<MediaLibraryManagerProps> = ({ token 
         const formData = new FormData();
         formData.append('image', file);
 
+        const authToken = token || sessionStorage.getItem('mc_admin_token') || localStorage.getItem('mc_admin_token');
         const res = await fetch('/api/upload', {
           method: 'POST',
-          headers: { Authorization: `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${authToken || ''}` },
           body: formData,
         });
 

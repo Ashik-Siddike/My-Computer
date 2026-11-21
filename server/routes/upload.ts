@@ -52,103 +52,130 @@ const storage = multer.diskStorage({
 
 const fileFilter = (_req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
   const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/gif'];
-  if (allowed.includes(file.mimetype)) {
+  if (allowed.includes(file.mimetype.toLowerCase())) {
     cb(null, true);
   } else {
-    cb(new Error('Invalid file type. Only JPG, PNG, WebP, GIF, and SVG are allowed.'));
+    cb(new Error(`Invalid file type (${file.mimetype}). Only JPG, PNG, WebP, GIF, and SVG are allowed.`));
   }
 };
 
 const upload = multer({
   storage,
-  limits: { fileSize: 15 * 1024 * 1024 }, // 15MB limit
+  limits: { fileSize: 25 * 1024 * 1024 }, // 25MB limit
   fileFilter,
 });
 
 /* ── POST /api/upload - Single/Multiple Image Upload (Admin protected) ── */
-uploadRouter.post('/', verifyAdminToken, async (req: Request, res: Response) => {
-  // Check if payload is Base64 JSON
-  if (req.body && (req.body.base64Data || req.body.data)) {
+uploadRouter.post('/', verifyAdminToken, (req: Request, res: Response) => {
+  // Check if payload is Base64 JSON (application/json)
+  if (req.body && (req.body.base64Data || req.body.data || req.body.image)) {
     try {
-      const raw = req.body.base64Data || req.body.data;
-      
-      let mimeType = 'image/webp';
-      let base64 = raw;
-      if (raw.includes(';base64,')) {
-        const parts = raw.split(';base64,');
-        mimeType = parts[0].replace('data:', '');
-        base64 = parts[1];
+      const raw = req.body.base64Data || req.body.data || req.body.image;
+      if (typeof raw === 'string' && raw.includes('base64')) {
+        let mimeType = 'image/webp';
+        let base64 = raw;
+        if (raw.includes(';base64,')) {
+          const parts = raw.split(';base64,');
+          mimeType = parts[0].replace('data:', '');
+          base64 = parts[1];
+        }
+
+        const ext = mimeType.includes('png') ? '.png' : (mimeType.includes('jpeg') || mimeType.includes('jpg')) ? '.jpg' : '.webp';
+        const cleanName = `mc-${Date.now()}-${Math.random().toString(36).substring(2, 8)}${ext}`;
+        const filePath = path.join(UPLOADS_DIR, cleanName);
+
+        const buffer = Buffer.from(base64, 'base64');
+        fs.writeFileSync(filePath, buffer);
+
+        const stats = fs.statSync(filePath);
+        const dataUri = raw.includes(';base64,') ? raw : `data:${mimeType};base64,${base64}`;
+        const fileUrl = `/uploads/${cleanName}`;
+
+        saveMediaToDb(cleanName, mimeType, stats.size, dataUri, base64).catch(e => console.warn('[Upload DB save error]:', e));
+
+        return res.status(201).json({
+          success: true,
+          message: 'Image uploaded successfully',
+          url: fileUrl,
+          fileUrl,
+          dataUri,
+          filename: cleanName,
+          size: stats.size,
+          mimetype: mimeType,
+        });
       }
-
-      const ext = mimeType.includes('png') ? '.png' : mimeType.includes('jpeg') || mimeType.includes('jpg') ? '.jpg' : '.webp';
-      const cleanName = `mc-${Date.now()}-${Math.random().toString(36).substring(2, 8)}${ext}`;
-      const filePath = path.join(UPLOADS_DIR, cleanName);
-
-      const buffer = Buffer.from(base64, 'base64');
-      fs.writeFileSync(filePath, buffer);
-
-      const stats = fs.statSync(filePath);
-      const dataUri = raw.includes(';base64,') ? raw : `data:${mimeType};base64,${base64}`;
-
-      await saveMediaToDb(cleanName, mimeType, stats.size, dataUri, base64);
-
-      return res.status(201).json({
-        success: true,
-        message: 'Image uploaded successfully',
-        url: dataUri, // Persistent Data URI ensures it NEVER breaks or 404s anywhere!
-        fileUrl: `/uploads/${cleanName}`,
-        dataUri,
-        filename: cleanName,
-        size: stats.size,
-        mimetype: mimeType,
-      });
     } catch (err: any) {
       console.error('[Base64 Upload Error]:', err);
       return res.status(400).json({ success: false, error: err.message || 'Failed to process base64 upload' });
     }
   }
 
-  // Handle standard Multipart Form Upload
-  const uploadSingle = upload.single('image');
-  uploadSingle(req, res, async (err: any) => {
+  // Handle standard Multipart Form Upload (supports single or multiple files with any field name: image, file, media, etc.)
+  upload.any()(req, res, async (err: any) => {
     if (err) {
       console.error('[Multer Upload Error]:', err);
-      return res.status(400).json({ success: false, error: err.message || 'Image upload failed' });
+      const isLimit = err.code === 'LIMIT_FILE_SIZE';
+      return res.status(400).json({
+        success: false,
+        error: isLimit ? 'File size exceeds 25MB limit. Please upload an optimized image.' : (err.message || 'Image upload failed'),
+        code: err.code,
+      });
     }
 
-    if (!req.file) {
-      return res.status(400).json({ success: false, error: 'No image file uploaded' });
+    const files = (req.files as Express.Multer.File[]) || (req.file ? [req.file] : []);
+
+    if (!files || files.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'No image file was received. Please select an image to upload.',
+      });
     }
 
     try {
-      const buffer = fs.readFileSync(req.file.path);
-      const base64 = buffer.toString('base64');
-      const dataUri = `data:${req.file.mimetype};base64,${base64}`;
+      const processed = [];
+      for (const f of files) {
+        const buffer = fs.readFileSync(f.path);
+        const base64 = buffer.toString('base64');
+        const dataUri = `data:${f.mimetype};base64,${base64}`;
+        const fileUrl = `/uploads/${f.filename}`;
 
-      await saveMediaToDb(req.file.filename, req.file.mimetype, req.file.size, dataUri, base64);
+        await saveMediaToDb(f.filename, f.mimetype, f.size, dataUri, base64);
 
-      const fileUrl = `/uploads/${req.file.filename}`;
+        processed.push({
+          url: fileUrl,
+          fileUrl,
+          dataUri,
+          filename: f.filename,
+          size: f.size,
+          mimetype: f.mimetype,
+        });
+      }
+
+      const primary = processed[0];
       return res.status(201).json({
         success: true,
-        message: 'Image uploaded successfully',
-        url: dataUri, // Persistent Data URI
-        fileUrl,
-        dataUri,
-        filename: req.file.filename,
-        size: req.file.size,
-        mimetype: req.file.mimetype,
+        message: processed.length > 1 ? `${processed.length} images uploaded successfully` : 'Image uploaded successfully',
+        url: primary.fileUrl,
+        fileUrl: primary.fileUrl,
+        dataUri: primary.dataUri,
+        filename: primary.filename,
+        size: primary.size,
+        mimetype: primary.mimetype,
+        files: processed,
+        urls: processed.map(p => p.fileUrl),
       });
     } catch (saveErr: any) {
       console.error('[Upload Post-process Error]:', saveErr);
-      const fileUrl = `/uploads/${req.file.filename}`;
+      const primaryFile = files[0];
+      const fallbackUrl = `/uploads/${primaryFile.filename}`;
       return res.status(201).json({
         success: true,
         message: 'Image uploaded successfully',
-        url: fileUrl,
-        fileUrl,
-        filename: req.file.filename,
-        size: req.file.size,
-        mimetype: req.file.mimetype,
+        url: fallbackUrl,
+        fileUrl: fallbackUrl,
+        filename: primaryFile.filename,
+        size: primaryFile.size,
+        mimetype: primaryFile.mimetype,
       });
     }
   });

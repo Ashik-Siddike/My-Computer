@@ -311,6 +311,18 @@ productsRouter.post('/', verifyAdminToken, async (req: Request, res: Response) =
         savedProduct = await newProduct.save();
       } catch (dbErr: any) {
         console.warn('[MongoDB Save Product Warning]:', dbErr.message);
+        // If duplicate productId or slug, update existing document
+        if (dbErr.code === 11000) {
+          try {
+            savedProduct = await Product.findOneAndUpdate(
+              { $or: [{ productId }, { slug }] },
+              { $set: productPayload },
+              { returnDocument: 'after', upsert: true }
+            );
+          } catch (e: any) {
+            console.warn('[MongoDB Upsert Fallback Warning]:', e.message);
+          }
+        }
       }
     }
 
@@ -366,9 +378,9 @@ productsRouter.put('/:id', verifyAdminToken, async (req: Request, res: Response)
     await connectDB();
     if (isDbConnected()) {
       updatedDoc = await Product.findOneAndUpdate(
-        { $or: [{ productId: id }, { slug: id }, { _id: id.match(/^[0-9a-fA-F]{24}$/) ? id : null }] },
+        { $or: [{ productId: id }, { id: id }, { slug: id }, { _id: id.match(/^[0-9a-fA-F]{24}$/) ? id : null }] },
         { $set: updates },
-        { returnDocument: 'after', runValidators: true }
+        { returnDocument: 'after', runValidators: false }
       );
     }
 
@@ -396,7 +408,7 @@ productsRouter.delete('/:id', verifyAdminToken, async (req: Request, res: Respon
     await connectDB();
     if (isDbConnected()) {
       await Product.findOneAndDelete({
-        $or: [{ productId: id }, { slug: id }, { _id: id.match(/^[0-9a-fA-F]{24}$/) ? id : null }],
+        $or: [{ productId: id }, { id: id }, { slug: id }, { _id: id.match(/^[0-9a-fA-F]{24}$/) ? id : null }],
       });
     }
 

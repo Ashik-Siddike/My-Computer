@@ -4,9 +4,17 @@ import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
 
 function apiServerPlugin(): Plugin {
+  let cachedApp: any = null;
+
   return {
     name: 'api-server-plugin',
     configureServer(server) {
+      server.watcher.on('change', (file) => {
+        if (file.includes('server')) {
+          cachedApp = null;
+        }
+      });
+
       server.middlewares.use(async (req, res, next) => {
         if (req.url && (
           req.url === '/api' ||
@@ -15,11 +23,35 @@ function apiServerPlugin(): Plugin {
           req.url.startsWith('/uploads/')
         )) {
           try {
-            const { app } = await server.ssrLoadModule('/server/app.ts');
-            app(req, res, next);
-          } catch (err) {
-            console.error('[Vite API Middleware Error]:', err);
-            next(err);
+            if (!cachedApp) {
+              const mod = await server.ssrLoadModule('/server/app.ts');
+              cachedApp = mod.app;
+            }
+            cachedApp(req, res, (err?: any) => {
+              if (err) {
+                console.error('[Vite API Middleware Error]:', err);
+                if (!res.headersSent) {
+                  res.statusCode = err.status || 500;
+                  res.setHeader('Content-Type', 'application/json');
+                  res.end(JSON.stringify({
+                    success: false,
+                    error: err.message || 'Internal API Error',
+                  }));
+                }
+              } else {
+                next();
+              }
+            });
+          } catch (err: any) {
+            console.error('[Vite API Load Error]:', err);
+            if (!res.headersSent) {
+              res.statusCode = 500;
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({
+                success: false,
+                error: err.message || 'Failed to initialize API server',
+              }));
+            }
           }
         } else {
           next();

@@ -51,10 +51,90 @@ export async function apiFetch(input: string | URL | Request, init?: RequestInit
 }
 
 /**
- * Automatically intercepts relative API fetches in the browser if VITE_API_URL is set
+ * Safely parses JSON from a fetch Response without throwing SyntaxError.
+ * Handles empty responses (0 bytes), HTML errors, and server disconnects gracefully.
+ */
+export async function safeJson<T = any>(
+  res: Response,
+  defaultError = 'Request failed'
+): Promise<{ ok: boolean; status: number; data: T }> {
+  let text = '';
+  try {
+    text = await res.text();
+  } catch (err: any) {
+    return {
+      ok: false,
+      status: res.status || 500,
+      data: { success: false, error: err.message || defaultError } as unknown as T,
+    };
+  }
+
+  if (!text || !text.trim()) {
+    return {
+      ok: res.ok,
+      status: res.status,
+      data: {
+        success: res.ok,
+        error: res.ok ? undefined : `${defaultError} (HTTP ${res.status})`,
+      } as unknown as T,
+    };
+  }
+
+  try {
+    const data = JSON.parse(text);
+    return {
+      ok: res.ok,
+      status: res.status,
+      data,
+    };
+  } catch {
+    return {
+      ok: false,
+      status: res.status,
+      data: {
+        success: false,
+        error: `Server returned invalid response (HTTP ${res.status})`,
+      } as unknown as T,
+    };
+  }
+}
+
+/**
+ * Automatically intercepts relative API fetches in the browser if VITE_API_URL is set,
+ * and adds a global safety net to Response.prototype.json to prevent "Unexpected end of JSON input" crashes.
  */
 export function initApiInterceptor() {
-  if (typeof window !== 'undefined' && API_BASE_URL) {
+  if (typeof window === 'undefined') return;
+
+  // 1. Safe JSON Parser Net: prevents unhandled "Unexpected end of JSON input" across the entire app
+  Response.prototype.json = async function () {
+    try {
+      const text = await this.text();
+      if (!text || !text.trim()) {
+        return {
+          success: this.ok,
+          error: this.ok ? undefined : `Server returned empty response (HTTP ${this.status})`,
+        };
+      }
+      try {
+        return JSON.parse(text);
+      } catch {
+        console.warn('[Safe JSON Net]: Non-JSON response received from server (HTTP ' + this.status + ')');
+        return {
+          success: false,
+          error: `Server returned non-JSON response (HTTP ${this.status})`,
+        };
+      }
+    } catch (err: any) {
+      return {
+        success: false,
+        error: err.message || 'Failed to read response body',
+      };
+    }
+  };
+
+  // 2. Fetch URL redirect for split deployments
+  if (API_BASE_URL) {
     const originalFetch = window.fetch.bind(window);
     window.fetch = function (input: RequestInfo | URL, init?: RequestInit) {
       if (typeof input === 'string') {

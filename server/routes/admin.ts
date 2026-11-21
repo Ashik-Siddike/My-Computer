@@ -8,12 +8,15 @@ import { Category } from '../models/Category.ts';
 import { generateToken, verifyAdminToken, type AuthenticatedRequest } from '../middleware/auth.ts';
 import { getLocalOrders } from './orders.ts';
 import { getLocalCategories } from './categories.ts';
-import { getLocalProducts } from './products.ts';
+import { getLocalProducts, productsRouter } from './products.ts';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
 export const adminRouter = Router();
+
+// Mount productsRouter under /api/admin/products for unified admin product management
+adminRouter.use('/products', productsRouter);
 
 /**
  * Helper to ensure a default admin exists in the database

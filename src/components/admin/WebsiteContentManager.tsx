@@ -140,18 +140,20 @@ export const WebsiteContentManager: React.FC<WebsiteContentManagerProps> = ({
     setLogoUploading(true);
 
     try {
+      const authToken = token || sessionStorage.getItem('mc_admin_token') || localStorage.getItem('mc_admin_token');
       const formData = new FormData();
       formData.append('image', file);
 
       const res = await fetch('/api/upload', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${authToken || ''}` },
         body: formData,
       });
 
       const data = await res.json();
-      if (res.ok && data.success && data.url) {
-        setNavbarForm(prev => ({ ...prev, logoUrl: data.url }));
+      const chosenUrl = data.url || data.fileUrl || data.dataUri;
+      if (res.ok && data.success && chosenUrl) {
+        setNavbarForm(prev => ({ ...prev, logoUrl: chosenUrl }));
         addToast('Logo Uploaded', 'Custom logo saved to server. Remember to click "Save Navbar Settings".');
       } else {
         throw new Error(data.error || 'Failed to upload logo');

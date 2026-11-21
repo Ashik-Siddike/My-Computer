@@ -176,10 +176,11 @@ export const CardManager: React.FC<CardManagerProps> = ({ token }) => {
     try {
       const formData = new FormData();
       formData.append('image', file);
+      const authToken = token || sessionStorage.getItem('mc_admin_token') || localStorage.getItem('mc_admin_token');
       const res = await fetch('/api/upload', {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${token || ''}`,
+          Authorization: `Bearer ${authToken || ''}`,
         },
         body: formData,
       });

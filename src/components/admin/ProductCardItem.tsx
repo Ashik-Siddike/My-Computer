@@ -59,8 +59,9 @@ export const ProductCardItem: React.FC<ProductCardItemProps> = ({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!token) {
-      addToast('Error', 'Admin authentication required', 'warning');
+    const authToken = token || sessionStorage.getItem('mc_admin_token') || localStorage.getItem('mc_admin_token');
+    if (!authToken) {
+      addToast('Error', 'Admin authentication required. Please log in.', 'warning');
       return;
     }
 
@@ -71,16 +72,19 @@ export const ProductCardItem: React.FC<ProductCardItemProps> = ({
 
       const uploadRes = await fetch('/api/upload', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${authToken}` },
         body: formData,
       });
 
       const uploadData = await uploadRes.json();
-      if (!uploadRes.ok || !uploadData.success || !uploadData.url) {
+      if (!uploadRes.ok || !uploadData.success) {
         throw new Error(uploadData.error || 'Failed to upload image file');
       }
 
-      const uploadedUrl = uploadData.url;
+      const uploadedUrl = uploadData.fileUrl || uploadData.url || uploadData.dataUri;
+      if (!uploadedUrl) {
+        throw new Error('Image uploaded but server did not provide a valid URL');
+      }
 
       // Update product record in DB
       const currentImages = Array.isArray(product.images) ? [...product.images] : [];
@@ -90,7 +94,7 @@ export const ProductCardItem: React.FC<ProductCardItemProps> = ({
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${authToken}`,
         },
         body: JSON.stringify({
           image: uploadedUrl,
@@ -100,12 +104,13 @@ export const ProductCardItem: React.FC<ProductCardItemProps> = ({
 
       const updateData = await updateRes.json();
       if (updateRes.ok && updateData.success) {
-        addToast('Image Replaced!', 'Product image updated and synced to database');
+        addToast('Image Replaced!', 'Product image updated and synced to database', 'success');
         onUpdateSuccess();
       } else {
         throw new Error(updateData.error || 'Failed to update product image');
       }
     } catch (err: any) {
+      console.error('[ProductCardItem Image Upload Error]:', err);
       addToast('Upload Failed', err.message || 'Could not replace product image', 'warning');
     } finally {
       setUploadingImage(false);
@@ -115,7 +120,8 @@ export const ProductCardItem: React.FC<ProductCardItemProps> = ({
 
   // 2. Stock Status Toggle
   const handleToggleStock = async () => {
-    if (!token) return;
+    const authToken = token || sessionStorage.getItem('mc_admin_token') || localStorage.getItem('mc_admin_token');
+    if (!authToken) return;
     setUpdatingStock(true);
     const nextStatus = isInStock ? 'Out of Stock' : 'In Stock';
     const nextCount = isInStock ? 0 : 15;
@@ -125,7 +131,7 @@ export const ProductCardItem: React.FC<ProductCardItemProps> = ({
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${authToken}`,
         },
         body: JSON.stringify({
           stockStatus: nextStatus,
@@ -151,7 +157,8 @@ export const ProductCardItem: React.FC<ProductCardItemProps> = ({
 
   // 3. Visibility Toggle
   const handleToggleVisibility = async () => {
-    if (!token) return;
+    const authToken = token || sessionStorage.getItem('mc_admin_token') || localStorage.getItem('mc_admin_token');
+    if (!authToken) return;
     setUpdatingVisibility(true);
     const nextVisibility = !isVisible;
 
@@ -160,7 +167,7 @@ export const ProductCardItem: React.FC<ProductCardItemProps> = ({
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${authToken}`,
         },
         body: JSON.stringify({
           isVisible: nextVisibility,
@@ -192,7 +199,8 @@ export const ProductCardItem: React.FC<ProductCardItemProps> = ({
       return;
     }
 
-    if (!token) return;
+    const authToken = token || sessionStorage.getItem('mc_admin_token') || localStorage.getItem('mc_admin_token');
+    if (!authToken) return;
     setSavingPrice(true);
 
     try {
@@ -200,7 +208,7 @@ export const ProductCardItem: React.FC<ProductCardItemProps> = ({
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${authToken}`,
         },
         body: JSON.stringify({
           price: numericPrice,
