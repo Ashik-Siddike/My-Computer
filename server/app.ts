@@ -8,15 +8,16 @@ import { adminRouter } from './routes/admin.ts';
 import { authRouter } from './routes/auth.ts';
 import { seedRouter } from './routes/seed.ts';
 import { cardsRouter } from './routes/cards.ts';
-import { uploadRouter } from './routes/upload.ts';
+import { uploadRouter, serveImageFile } from './routes/upload.ts';
 import { settingsRouter } from './routes/settings.ts';
 import { isDbConnected } from './config/db.ts';
 
 export const app = express();
 
-// Static directory for uploaded product and brand images
+// Static directory for uploaded product and brand images with MongoDB fallback
 const UPLOADS_DIR = path.resolve(process.cwd(), 'uploads');
 app.use('/uploads', express.static(UPLOADS_DIR));
+app.get('/uploads/:filename', serveImageFile);
 
 // Middleware
 app.use(cors({

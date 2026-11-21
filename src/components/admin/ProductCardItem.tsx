@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useStore } from '../../context/StoreContext';
+import { resolveImageUrl } from '../../lib/api';
 import {
   Upload,
   Edit2,
@@ -297,8 +298,12 @@ export const ProductCardItem: React.FC<ProductCardItemProps> = ({
         {/* Product Image with Direct Hover Replace Button */}
         <div className="relative w-full aspect-square bg-slate-50 rounded-xl overflow-hidden mb-3.5 border border-slate-100 flex items-center justify-center p-2 group/img">
           <img
-            src={image}
+            src={resolveImageUrl(image)}
             alt={product.name}
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = 'https://images.unsplash.com/photo-1546435770-a3e426bf472b?q=80&w=800&auto=format&fit=crop';
+            }}
             className="w-full h-full object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-105"
           />
 

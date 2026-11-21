@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useStore } from '../../context/StoreContext';
+import { resolveImageUrl } from '../../lib/api';
 import {
   X,
   Upload,
@@ -179,12 +180,13 @@ export const ProductEditorModal: React.FC<ProductEditorModalProps> = ({
       });
 
       const data = await res.json();
-      if (res.ok && data.success && data.url) {
+      const chosenUrl = data.url || data.dataUri || data.fileUrl;
+      if (res.ok && data.success && chosenUrl) {
         setForm(prev => {
-          const updatedImages = [data.url, ...prev.images.filter(x => x !== data.url)];
+          const updatedImages = [chosenUrl, ...prev.images.filter(x => x !== chosenUrl)];
           return {
             ...prev,
-            image: data.url,
+            image: chosenUrl,
             images: updatedImages,
           };
         });
@@ -734,7 +736,15 @@ export const ProductEditorModal: React.FC<ProductEditorModalProps> = ({
                         form.image === imgUrl ? 'border-blue-600 ring-2 ring-blue-500/20' : 'border-slate-200'
                       }`}
                     >
-                      <img src={imgUrl} alt="" className="w-full h-full object-contain rounded-xl" />
+                      <img
+                        src={resolveImageUrl(imgUrl)}
+                        alt=""
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = 'https://images.unsplash.com/photo-1546435770-a3e426bf472b?q=80&w=800&auto=format&fit=crop';
+                        }}
+                        className="w-full h-full object-contain rounded-xl"
+                      />
 
                       {/* Select as Primary */}
                       {form.image !== imgUrl && (
@@ -985,8 +995,12 @@ export const ProductEditorModal: React.FC<ProductEditorModalProps> = ({
               <div className="w-full max-w-xs bg-white rounded-2xl border border-slate-200 p-4 shadow-xl space-y-3">
                 <div className="relative aspect-[4/3] rounded-xl bg-slate-50 overflow-hidden p-2 flex items-center justify-center border border-slate-100">
                   <img
-                    src={form.image || (form.images[0] || 'https://images.unsplash.com/photo-1603302576837-37561b2e2302?q=80&w=800&auto=format&fit=crop')}
+                    src={resolveImageUrl(form.image || form.images[0])}
                     alt={form.name}
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = 'https://images.unsplash.com/photo-1603302576837-37561b2e2302?q=80&w=800&auto=format&fit=crop';
+                    }}
                     className="w-full h-full object-contain"
                   />
                   {form.badge && (

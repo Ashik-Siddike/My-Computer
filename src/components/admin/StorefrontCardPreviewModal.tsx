@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Smartphone, Monitor, ShieldCheck, ShoppingCart } from 'lucide-react';
+import { resolveImageUrl } from '../../lib/api';
 
 interface StorefrontCardPreviewModalProps {
   isOpen: boolean;
@@ -116,8 +117,12 @@ export const StorefrontCardPreviewModal: React.FC<StorefrontCardPreviewModalProp
               {/* Product Image */}
               <div className="w-full aspect-square bg-slate-50 rounded-xl overflow-hidden mb-4 flex items-center justify-center border border-slate-100 p-2">
                 <img
-                  src={image}
+                  src={resolveImageUrl(image)}
                   alt={product.name}
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = 'https://images.unsplash.com/photo-1546435770-a3e426bf472b?q=80&w=800&auto=format&fit=crop';
+                  }}
                   className="w-full h-full object-contain mix-blend-multiply"
                 />
               </div>

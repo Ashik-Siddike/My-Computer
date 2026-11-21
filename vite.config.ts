@@ -8,7 +8,12 @@ function apiServerPlugin(): Plugin {
     name: 'api-server-plugin',
     configureServer(server) {
       server.middlewares.use(async (req, res, next) => {
-        if (req.url && (req.url === '/api' || req.url.startsWith('/api/'))) {
+        if (req.url && (
+          req.url === '/api' ||
+          req.url.startsWith('/api/') ||
+          req.url === '/uploads' ||
+          req.url.startsWith('/uploads/')
+        )) {
           try {
             const { app } = await server.ssrLoadModule('/server/app.ts');
             app(req, res, next);

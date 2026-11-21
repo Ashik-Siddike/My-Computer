@@ -19,6 +19,7 @@ import {
   Sparkles
 } from "lucide-react";
 import { cn } from "../../lib/utils";
+import { resolveImageUrl } from "../../lib/api";
 
 export interface SpatialCardItem {
   id: string;
@@ -221,13 +222,17 @@ function getOrbitalSlot(offset: number, total: number): OrbitalSlot {
 export function renderHardwareCard(item: SpatialCardItem): React.ReactNode {
   const fallbackImage =
     "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?q=80&w=800&auto=format&fit=crop";
-  const displayImage = item.image && item.image.trim() ? item.image : fallbackImage;
+  const displayImage = resolveImageUrl(item.image, fallbackImage);
 
   return (
     <div className="relative h-full w-full overflow-hidden bg-slate-950 flex flex-col justify-between p-4 sm:p-5 select-none group">
       <img
         src={displayImage}
         alt={item.title}
+        onError={(e) => {
+          e.currentTarget.onerror = null;
+          e.currentTarget.src = fallbackImage;
+        }}
         className="absolute inset-0 h-full w-full object-cover opacity-85 transition-transform duration-700 group-hover:scale-105"
         draggable={false}
       />

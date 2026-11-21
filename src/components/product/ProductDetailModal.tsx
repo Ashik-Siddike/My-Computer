@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useStore } from '../../context/StoreContext';
 import { X, Star, ShoppingCart, ShieldCheck, Check } from 'lucide-react';
+import { resolveImageUrl } from '../../lib/api';
 
 export const ProductDetailModal: React.FC = () => {
   const { quickViewProduct, setQuickViewProduct, addToCart, openProductDetail } = useStore();
@@ -37,8 +38,12 @@ export const ProductDetailModal: React.FC = () => {
         <div className="md:w-1/2 p-6 bg-slate-50 flex flex-col items-center justify-center">
           <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden mb-4 bg-white p-2 flex items-center justify-center border border-slate-200">
             <img
-              src={product.images[selectedImgIdx] || product.images[0]}
+              src={resolveImageUrl(product.images[selectedImgIdx] || product.images[0])}
               alt={product.name}
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = 'https://images.unsplash.com/photo-1546435770-a3e426bf472b?q=80&w=800&auto=format&fit=crop';
+              }}
               className="w-full h-full object-contain"
             />
           </div>

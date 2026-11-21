@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import type { Product } from '../../types';
 import { useStore } from '../../context/StoreContext';
 import { ShoppingCart, Heart, GitCompare, Eye, Check, ShieldCheck, Edit2 } from 'lucide-react';
+import { resolveImageUrl } from '../../lib/api';
 
 interface ProductCardProps {
   product: Product;
@@ -158,8 +159,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         }}
       >
         <img
-          src={product.images && product.images.length > 0 ? product.images[0] : '/images/placeholder.webp'}
+          src={resolveImageUrl((product.images && product.images.length > 0 ? product.images[0] : (product as unknown as { image?: string }).image))}
           alt={product.name}
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = 'https://images.unsplash.com/photo-1546435770-a3e426bf472b?q=80&w=800&auto=format&fit=crop';
+          }}
           className="w-full h-full object-contain transform group-hover/img:scale-105 transition-transform duration-500 ease-out"
           loading="lazy"
         />

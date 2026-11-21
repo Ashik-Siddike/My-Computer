@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useStore } from '../../context/StoreContext';
+import { resolveImageUrl } from '../../lib/api';
 import type { SiteCard, CardSection, CardStatus, CardDevice } from '../../types';
 import {
   LayoutGrid,
@@ -161,6 +162,17 @@ export const CardManager: React.FC<CardManagerProps> = ({ token }) => {
     }
 
     setUploadingCardImage(true);
+
+    // Read local data URL immediately for instant UI feedback
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const dataUri = ev.target?.result as string;
+      if (dataUri) {
+        setEditingCard(prev => ({ ...prev, image: dataUri }));
+      }
+    };
+    reader.readAsDataURL(file);
+
     try {
       const formData = new FormData();
       formData.append('image', file);
@@ -173,14 +185,15 @@ export const CardManager: React.FC<CardManagerProps> = ({ token }) => {
       });
 
       const data = await res.json();
-      if (res.ok && data.success && data.url) {
-        setEditingCard(prev => ({ ...prev, image: data.url }));
+      if (res.ok && data.success) {
+        const finalUrl = data.url || data.dataUri || data.fileUrl;
+        setEditingCard(prev => ({ ...prev, image: finalUrl }));
         addToast('Image Uploaded', 'New card image uploaded successfully.', 'success');
       } else {
-        addToast('Upload Failed', data.error || 'Failed to upload image.', 'warning');
+        addToast('Upload Notice', data.error || 'Server upload failed, using local image.', 'warning');
       }
     } catch (err: any) {
-      addToast('Upload Error', err.message || 'Network error while uploading image.', 'warning');
+      addToast('Upload Notice', 'Using local image preview. Click Save to persist.', 'info');
     } finally {
       setUploadingCardImage(false);
       if (cardFileInputRef.current) {
@@ -655,7 +668,7 @@ export const CardManager: React.FC<CardManagerProps> = ({ token }) => {
                   {card.image && (
                     <div
                       className="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-multiply group-hover:scale-105 transition-transform duration-500"
-                      style={{ backgroundImage: `url(${card.image})` }}
+                      style={{ backgroundImage: `url(${resolveImageUrl(card.image)})` }}
                     />
                   )}
 
@@ -1093,8 +1106,12 @@ export const CardManager: React.FC<CardManagerProps> = ({ token }) => {
                         {editingCard.image ? (
                           <div className="relative w-28 h-28 rounded-xl overflow-hidden border border-slate-700 bg-slate-900 shrink-0 group shadow-md">
                             <img
-                              src={editingCard.image}
+                              src={resolveImageUrl(editingCard.image)}
                               alt="Card Preview"
+                              onError={(e) => {
+                                e.currentTarget.onerror = null;
+                                e.currentTarget.src = 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=800&auto=format&fit=crop';
+                              }}
                               className="w-full h-full object-cover"
                             />
                             <button
@@ -1607,7 +1624,7 @@ export const CardManager: React.FC<CardManagerProps> = ({ token }) => {
                         {editingCard.image && (
                           <div
                             className="absolute inset-0 bg-cover bg-center opacity-25 mix-blend-multiply pointer-events-none"
-                            style={{ backgroundImage: `url(${editingCard.image})` }}
+                            style={{ backgroundImage: `url(${resolveImageUrl(editingCard.image)})` }}
                           />
                         )}
 

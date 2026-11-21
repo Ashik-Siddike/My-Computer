@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useStore } from '../../context/StoreContext';
 import { PRODUCTS } from '../../data/mockData';
 import { ProductCard } from '../shop/ProductCard';
+import { resolveImageUrl } from '../../lib/api';
 import {
   Star,
   ShoppingCart,
@@ -106,8 +107,12 @@ export const ProductDetailPage: React.FC = () => {
         <div className="lg:col-span-5 space-y-4">
           <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden bg-slate-50 p-6 border border-slate-200 flex items-center justify-center relative group">
             <img
-              src={images[selectedImg] || images[0]}
+              src={resolveImageUrl(images[selectedImg] || images[0])}
               alt={product.name}
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = 'https://images.unsplash.com/photo-1546435770-a3e426bf472b?q=80&w=800&auto=format&fit=crop';
+              }}
               className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
             />
 

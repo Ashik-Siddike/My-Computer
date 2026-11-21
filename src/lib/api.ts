@@ -21,15 +21,20 @@ export function apiUrl(endpoint: string): string {
  * - Keeps data URLs and external URLs (e.g. Unsplash, CDN) untouched
  * - Prefixes /uploads/... with API_BASE_URL when deployed separately
  */
-export function resolveImageUrl(url?: string | null): string {
-  if (!url) return '';
-  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
-    return url;
+export function resolveImageUrl(
+  url?: string | null,
+  fallback = 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?q=80&w=800&auto=format&fit=crop'
+): string {
+  if (!url || typeof url !== 'string' || !url.trim()) return fallback;
+  const trimmed = url.trim();
+  if (trimmed.startsWith('data:') || trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    return trimmed;
   }
-  if (url.startsWith('/uploads/')) {
-    return API_BASE_URL ? `${API_BASE_URL}${url}` : url;
+  const withLeadingSlash = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+  if (withLeadingSlash.startsWith('/uploads/') || withLeadingSlash.startsWith('/api/')) {
+    return API_BASE_URL ? `${API_BASE_URL}${withLeadingSlash}` : withLeadingSlash;
   }
-  return url;
+  return withLeadingSlash;
 }
 
 /**
