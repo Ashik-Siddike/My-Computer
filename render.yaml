@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: my-computer-api
+    env: node
+    plan: starter
+    region: singapore
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 22.14.0
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        sync: false
+      - key: DATABASE_NAME
+        value: my_computer
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_NAME
+        value: Store Admin
+      - key: ADMIN_EMAIL
+        value: salesmycomputer2025@gmail.com
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: DHAKA_DELIVERY_CHARGE
+        value: "70"
+      - key: OUTSIDE_DHAKA_DELIVERY_CHARGE
+        value: "140"

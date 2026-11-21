@@ -1,0 +1,385 @@
+[
+  {
+    "id": "desktop-laptop",
+    "name": "Desktop & Laptop",
+    "nameBn": "ডেস্কটপ ও ল্যাপটপ",
+    "icon": "Laptop",
+    "image": "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=800&auto=format&fit=crop",
+    "itemCount": 22,
+    "order": 1,
+    "popular": true,
+    "isVisible": true,
+    "subCategories": [
+      {
+        "id": "business-laptop",
+        "name": "Business Laptops",
+        "nameBn": "বিজনেস ল্যাপটপ"
+      },
+      {
+        "id": "gaming-laptop",
+        "name": "Gaming Laptops",
+        "nameBn": "গেমিং ল্যাপটপ"
+      },
+      {
+        "id": "apple-macbook",
+        "name": "Apple MacBooks",
+        "nameBn": "অ্যাপল ম্যাকবুক"
+      },
+      {
+        "id": "all-in-one-pc",
+        "name": "All-in-One PC",
+        "nameBn": "অল ইন ওয়ান পিসি"
+      }
+    ]
+  },
+  {
+    "id": "components",
+    "name": "Components",
+    "nameBn": "কম্পোনেন্টস",
+    "icon": "Cpu",
+    "image": "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?q=80&w=800&auto=format&fit=crop",
+    "itemCount": 16,
+    "order": 2,
+    "popular": true,
+    "isVisible": true,
+    "subCategories": [
+      {
+        "id": "processor",
+        "name": "Processors (CPU)",
+        "nameBn": "প্রসেসর"
+      },
+      {
+        "id": "motherboard",
+        "name": "Motherboards",
+        "nameBn": "মাদারবোর্ড"
+      },
+      {
+        "id": "ram",
+        "name": "Memory (RAM)",
+        "nameBn": "র‌্যাম"
+      },
+      {
+        "id": "graphics-card",
+        "name": "Graphics Cards (GPU)",
+        "nameBn": "গ্রাফিক্স কার্ড"
+      },
+      {
+        "id": "casing",
+        "name": "Casings & Fans",
+        "nameBn": "কেসিং ও কুলার"
+      }
+    ]
+  },
+  {
+    "id": "monitors",
+    "name": "Monitors",
+    "nameBn": "মনিটর",
+    "icon": "Monitor",
+    "image": "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?q=80&w=800&auto=format&fit=crop",
+    "itemCount": 30,
+    "order": 3,
+    "popular": true,
+    "isVisible": true,
+    "subCategories": [
+      {
+        "id": "lg-monitor",
+        "name": "LG Monitors",
+        "nameBn": "এলজি মনিটর"
+      },
+      {
+        "id": "asus-monitor",
+        "name": "ASUS Monitors",
+        "nameBn": "আসুস মনিটর"
+      },
+      {
+        "id": "4k-monitor",
+        "name": "4K UHD Monitors",
+        "nameBn": "৪কে মনিটর"
+      },
+      {
+        "id": "gaming-monitor",
+        "name": "Gaming Monitors (144Hz+)",
+        "nameBn": "গেমিং মনিটর"
+      }
+    ]
+  },
+  {
+    "id": "storage",
+    "name": "Storage",
+    "nameBn": "স্টোরেজ",
+    "icon": "HardDrive",
+    "image": "https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?q=80&w=800&auto=format&fit=crop",
+    "itemCount": 12,
+    "order": 4,
+    "popular": true,
+    "isVisible": true,
+    "subCategories": [
+      {
+        "id": "nvme-ssd",
+        "name": "NVMe M.2 SSDs",
+        "nameBn": "এনভিএমই এসএসডি"
+      },
+      {
+        "id": "sata-ssd",
+        "name": "SATA SSDs",
+        "nameBn": "সাটা এসএসডি"
+      },
+      {
+        "id": "portable-ssd",
+        "name": "Portable SSD & HDD",
+        "nameBn": "পোর্টেবল স্টোরেজ"
+      },
+      {
+        "id": "surveillance-hdd",
+        "name": "Surveillance & NAS HDD",
+        "nameBn": "সার্ভেল্যান্স হার্ডডিস্ক"
+      }
+    ]
+  },
+  {
+    "id": "ups",
+    "name": "UPS",
+    "nameBn": "ইউপিএস",
+    "icon": "Zap",
+    "image": "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=800&auto=format&fit=crop",
+    "itemCount": 10,
+    "order": 5,
+    "popular": true,
+    "isVisible": true,
+    "subCategories": [
+      {
+        "id": "offline-ups",
+        "name": "Offline UPS (650VA - 1200VA)",
+        "nameBn": "অফলাইন ইউপিএস"
+      },
+      {
+        "id": "online-ups",
+        "name": "Online UPS (1KVA - 10KVA)",
+        "nameBn": "অনলাইন ইউপিএস"
+      },
+      {
+        "id": "voltage-stabilizer",
+        "name": "Voltage Stabilizers",
+        "nameBn": "ভোল্টেজ স্ট্যাবিলাইজার"
+      }
+    ]
+  },
+  {
+    "id": "networking",
+    "name": "Networking",
+    "nameBn": "নেটওয়ার্কিং",
+    "icon": "Wifi",
+    "image": "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=800&auto=format&fit=crop",
+    "itemCount": 38,
+    "order": 6,
+    "popular": true,
+    "isVisible": true,
+    "subCategories": [
+      {
+        "id": "wifi-routers",
+        "name": "Wi-Fi 6 & Mesh Routers",
+        "nameBn": "ওয়াই-ফাই রাউটার"
+      },
+      {
+        "id": "onu-device",
+        "name": "GPON / EPON ONU Devices",
+        "nameBn": "ওএনইউ ডিভাইস"
+      },
+      {
+        "id": "network-switch",
+        "name": "Gigabit & PoE Switches",
+        "nameBn": "নেটওয়ার্ক সুইচ"
+      },
+      {
+        "id": "access-points",
+        "name": "Enterprise Access Points",
+        "nameBn": "এক্সেস পয়েন্ট"
+      }
+    ]
+  },
+  {
+    "id": "camera",
+    "name": "Camera & Security",
+    "nameBn": "ক্যামেরা ও সিকিউরিটি",
+    "icon": "Camera",
+    "image": "https://images.unsplash.com/photo-1557597774-9d273605dfa9?q=80&w=800&auto=format&fit=crop",
+    "itemCount": 73,
+    "order": 7,
+    "popular": true,
+    "isVisible": true,
+    "subCategories": [
+      {
+        "id": "ezviz-camera",
+        "name": "EZVIZ Smart AI Cameras",
+        "nameBn": "ইজভিজ ক্যামেরা"
+      },
+      {
+        "id": "cc-camera",
+        "name": "IP & CCTV Cameras",
+        "nameBn": "সিসি ক্যামেরা"
+      },
+      {
+        "id": "dvr-nvr",
+        "name": "NVR & DVR Systems",
+        "nameBn": "এনভিআর ও ডিভিআর"
+      },
+      {
+        "id": "action-camera",
+        "name": "Action & Dash Cameras",
+        "nameBn": "অ্যাকশন ক্যামেরা"
+      }
+    ]
+  },
+  {
+    "id": "accessories",
+    "name": "Accessories",
+    "nameBn": "এক্সেসরিজ",
+    "icon": "Keyboard",
+    "image": "https://images.unsplash.com/photo-1587829741301-dc798b83add3?q=80&w=800&auto=format&fit=crop",
+    "itemCount": 15,
+    "order": 8,
+    "popular": true,
+    "isVisible": true,
+    "subCategories": [
+      {
+        "id": "keyboards",
+        "name": "Keyboards & Mice",
+        "nameBn": "কীবোর্ড ও মাউস"
+      },
+      {
+        "id": "hubs-docks",
+        "name": "USB-C Hubs & Adapters",
+        "nameBn": "ইউএসবি হাব"
+      },
+      {
+        "id": "cables-chargers",
+        "name": "High-Speed Cables & Chargers",
+        "nameBn": "চার্জার ও কেবল"
+      }
+    ]
+  },
+  {
+    "id": "printer-office",
+    "name": "Printer & Office",
+    "nameBn": "প্রিন্টার ও অফিস",
+    "icon": "Printer",
+    "image": "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?q=80&w=800&auto=format&fit=crop",
+    "itemCount": 10,
+    "order": 9,
+    "popular": true,
+    "isVisible": true,
+    "subCategories": [
+      {
+        "id": "laser-printers",
+        "name": "Laser & Ink Tank Printers",
+        "nameBn": "লেজার প্রিন্টার"
+      },
+      {
+        "id": "scanners",
+        "name": "Document Scanners",
+        "nameBn": "স্ক্যানার"
+      },
+      {
+        "id": "barcode-scanners",
+        "name": "POS & Barcode Readers",
+        "nameBn": "বারকোড রিডার"
+      }
+    ]
+  },
+  {
+    "id": "gaming",
+    "name": "Gaming Gear",
+    "nameBn": "গেমিং গিয়ার",
+    "icon": "Gamepad2",
+    "image": "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800&auto=format&fit=crop",
+    "itemCount": 18,
+    "order": 10,
+    "popular": true,
+    "isVisible": true,
+    "subCategories": [
+      {
+        "id": "gaming-keyboards",
+        "name": "Mechanical Keyboards",
+        "nameBn": "মেকানিক্যাল কীবোর্ড"
+      },
+      {
+        "id": "gaming-mouse",
+        "name": "Esports Gaming Mouse",
+        "nameBn": "গেমিং মাউস"
+      },
+      {
+        "id": "gaming-headsets",
+        "name": "Gaming Headsets 7.1",
+        "nameBn": "গেমিং হেডসেট"
+      },
+      {
+        "id": "gaming-chairs",
+        "name": "Ergonomic Gaming Chairs",
+        "nameBn": "গেমিং চেয়ার"
+      }
+    ]
+  },
+  {
+    "id": "earbuds-headphones",
+    "name": "Earbuds & Headphones",
+    "nameBn": "ইয়ারবাডস ও হেডফোন",
+    "icon": "Headphones",
+    "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=800&auto=format&fit=crop",
+    "itemCount": 22,
+    "order": 11,
+    "popular": true,
+    "isVisible": true,
+    "subCategories": [
+      {
+        "id": "wireless-earbuds",
+        "name": "Wireless Earbuds",
+        "nameBn": "ওয়্যারলেস ইয়ারবাডস"
+      },
+      {
+        "id": "bluetooth-earbuds",
+        "name": "Bluetooth Earbuds",
+        "nameBn": "ব্লুটুথ ইয়ারবাডস"
+      },
+      {
+        "id": "gaming-earbuds",
+        "name": "Gaming Earbuds",
+        "nameBn": "গেমিং ইয়ারবাডস"
+      },
+      {
+        "id": "neckband-earphones",
+        "name": "Neckband Earphones",
+        "nameBn": "নেকব্যান্ড ইয়ারফোন"
+      },
+      {
+        "id": "wired-earphones",
+        "name": "Wired Earphones",
+        "nameBn": "তারযুক্ত ইয়ারফোন"
+      },
+      {
+        "id": "bluetooth-headphones",
+        "name": "Bluetooth Headphones",
+        "nameBn": "ব্লুটুথ হেডফোন"
+      },
+      {
+        "id": "wireless-headphones",
+        "name": "Wireless Headphones",
+        "nameBn": "ওয়্যারলেস হেডফোন"
+      },
+      {
+        "id": "gaming-headphones",
+        "name": "Gaming Headphones",
+        "nameBn": "গেমিং হেডফোন"
+      },
+      {
+        "id": "over-ear-headphones",
+        "name": "Over-Ear Headphones",
+        "nameBn": "ওভার-ইয়ার হেডফোন"
+      },
+      {
+        "id": "on-ear-headphones",
+        "name": "On-Ear Headphones",
+        "nameBn": "অন-ইয়ার হেডফোন"
+      }
+    ]
+  }
+]

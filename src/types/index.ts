@@ -1,0 +1,365 @@
+export type CategoryId = 
+  | 'camera'
+  | 'networking'
+  | 'software'
+  | 'server'
+  | 'storage'
+  | 'accessories'
+  | 'gadget'
+  | 'gaming'
+  | 'security'
+  | 'onu-device'
+  | 'server-storage'
+  | 'desktop'
+  | 'laptop'
+  | 'component'
+  | 'monitor'
+  | 'power'
+  | 'phone'
+  | 'tablet'
+  | 'office-equipment'
+  | 'tv'
+  | 'appliance'
+  | 'desktop-pc'
+  | 'gaming-pc'
+  | 'processor'
+  | 'graphics-card'
+  | 'motherboard'
+  | 'ram'
+  | 'keyboard-mouse'
+  | 'headphone-audio'
+  | 'cctv-security'
+  | 'tv-appliance'
+  | 'air-conditioner'
+  | 'mobile-tablet'
+  | (string & {});
+
+export type BrandName = 
+  | 'Apple'
+  | 'Asus'
+  | 'Dell'
+  | 'HP'
+  | 'Lenovo'
+  | 'Acer'
+  | 'MSI'
+  | 'Gigabyte'
+  | 'Intel'
+  | 'AMD'
+  | 'Nvidia'
+  | 'Corsair'
+  | 'Samsung'
+  | 'LG'
+  | 'Sony'
+  | 'Xiaomi'
+  | 'Hikvision'
+  | 'Dahua'
+  | 'TP-Link'
+  | 'Logitech'
+  | 'Tenda'
+  | 'D-Link'
+  | 'MikroTik'
+  | 'Mercusys'
+  | 'Netgear'
+  | 'Huawei'
+  | 'ZTE'
+  | 'FiberHome'
+  | 'Nokia'
+  | 'VSOL'
+  | 'CIG'
+  | 'Honor'
+  | 'Canon'
+  | 'Nikon'
+  | 'Fujifilm'
+  | 'GoPro'
+  | 'DJI'
+  | 'Insta360'
+  | 'SJCAM'
+  | 'Sigma'
+  | 'Tamron'
+  | 'Benro'
+  | 'Manfrotto'
+  | 'Zhiyun'
+  | 'EZVIZ'
+  | 'Imou'
+  | 'Uniview'
+  | 'ZKTeco'
+  | 'Tiandy';
+
+export interface ProductSpecification {
+  label: string;
+  value: string;
+}
+
+export interface BankEMI {
+  bankName: string;
+  months: number;
+  monthlyBDT: number;
+}
+
+export interface ProductReview {
+  id: string;
+  userName: string;
+  userAvatar?: string;
+  rating: number;
+  date: string;
+  comment: string;
+  verifiedPurchase: boolean;
+}
+
+export interface ProductQuestion {
+  id: string;
+  userName: string;
+  question: string;
+  date: string;
+  answer?: string;
+  answeredBy?: string;
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  slug: string;
+  brand: BrandName;
+  category: CategoryId;
+  categoryName: string;
+  subcategory?: string;
+  description?: string;
+  price?: number;
+  productId?: string;
+  badge?: 'Hot' | 'New' | 'Flash Sale' | 'Best Seller' | 'Offer' | 'Popular' | 'Top Tier' | 'Super Deal' | 'Hot Deal' | 'Pro Grade' | 'Enterprise' | 'Essential' | 'Pure Copper' | 'AI Powered' | (string & {});
+  regularPrice: number; // in BDT
+  discountPrice: number; // in BDT
+  discountPercentage: number;
+  rating: number;
+  reviewCount: number;
+  stockStatus: 'In Stock' | 'Limited Stock' | 'Out of Stock' | 'Pre-Order';
+  stockCount: number;
+  isFeatured?: boolean;
+  isFlashSale?: boolean;
+  isGaming?: boolean;
+  isSmartHome?: boolean;
+  isVisible?: boolean;
+  laptopSegment?: 'Business' | 'Student' | 'Creator' | 'Gaming' | 'Budget' | 'Premium';
+  images: string[];
+  shortSpecs: string[];
+  specifications: Record<string, ProductSpecification[]>;
+  warranty: string;
+  emiAvailable: boolean;
+  emiStartingBDT?: number;
+  pcBuilderCategory?: 'cpu' | 'motherboard' | 'ram' | 'gpu' | 'storage' | 'psu' | 'case' | 'cooler' | 'fans' | 'monitor' | 'keyboard' | 'mouse' | 'accessories' | (string & {});
+  wattage?: number; // for PC builder calculation
+  socketType?: string; // for compatibility check (e.g. LGA1700, AM5)
+  ramType?: string; // e.g., DDR4, DDR5
+  reviews: ProductReview[];
+  questions: ProductQuestion[];
+  createdDate: string;
+}
+
+export interface SubCategory {
+  id: string;
+  name: string;
+  nameBn: string;
+  popular?: boolean;
+  hasChildren?: boolean;
+  isShowAll?: boolean;
+  children?: { id: string; name: string; nameBn: string; brand?: string }[];
+}
+
+export interface Category {
+  id: CategoryId;
+  name: string;
+  nameBn: string;
+  icon: string;
+  image: string;
+  itemCount: number;
+  order?: number;
+  popular?: boolean;
+  isVisible?: boolean;
+  subCategories?: SubCategory[];
+}
+
+export interface Brand {
+  name: BrandName;
+  logo: string;
+  category: string;
+  popular: boolean;
+}
+
+export interface CartItem {
+  product: Product;
+  quantity: number;
+  selectedColor?: string;
+}
+
+export interface PCBuildComponent {
+  slotId: 'cpu' | 'motherboard' | 'ram' | 'gpu' | 'storage' | 'psu' | 'case' | 'cooler' | 'fans' | 'monitor' | 'keyboard' | 'mouse' | 'accessories' | (string & {});
+  slotName: string;
+  slotNameBn: string;
+  icon: string;
+  product: Product | null;
+}
+
+export interface FilterState {
+  category: string | null;
+  brand: string[];
+  priceRange: [number, number];
+  stockOnly: boolean;
+  gamingOnly: boolean;
+  emiOnly: boolean;
+  rating: number | null;
+  searchQuery: string;
+  sortBy: 'featured' | 'price-low' | 'price-high' | 'rating' | 'newest';
+}
+
+export interface OrderItem {
+  productId: string;
+  productName: string;
+  image: string;
+  price: number;
+  quantity: number;
+}
+
+export interface Order {
+  id: string;
+  date: string;
+  customerName: string;
+  customerPhone: string;
+  customerEmail: string;
+  shippingAddress: string;
+  district: string;
+  items: OrderItem[];
+  subtotal: number;
+  discount: number;
+  shippingCost: number;
+  total: number;
+  paymentMethod: 'bKash' | 'Nagad' | 'Rocket' | 'Upay' | 'Cash on Delivery';
+  paymentNumber?: string;
+  senderNumber?: string;
+  trxId?: string;
+  paymentStatus: 'Paid' | 'Pending';
+  orderStatus: 'Pending' | 'Confirmed' | 'Placed' | 'Processing' | 'Shipped' | 'Out for Delivery' | 'Delivered' | 'Cancelled';
+  area?: string;
+  note?: string;
+  orderId?: string;
+  deliveryCharge?: number;
+  grandTotal?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  trackingSteps: {
+    title: string;
+    date: string;
+    completed: boolean;
+    current?: boolean;
+  }[];
+}
+
+export interface BlogPost {
+  id: string;
+  title: string;
+  slug: string;
+  category: string;
+  author: string;
+  authorRole: string;
+  date: string;
+  readTime: string;
+  image: string;
+  excerpt: string;
+  content: string;
+  tags: string[];
+}
+
+export interface StoreLocation {
+  id: string;
+  name: string;
+  city: string;
+  address: string;
+  phone: string;
+  hours: string;
+  mapEmbedUrl: string;
+  isHeadquarter?: boolean;
+}
+
+export interface Coupon {
+  code: string;
+  discountPercent: number;
+  maxDiscountBDT: number;
+  minSpendBDT: number;
+  validUntil: string;
+}
+
+export type ViewMode = 
+  | 'home'
+  | 'shop'
+  | 'product-detail'
+  | 'pc-builder'
+  | 'compare'
+  | 'cart'
+  | 'checkout'
+  | 'order-tracking'
+  | 'user-dashboard'
+  | 'admin'
+  | 'store-locator'
+  | 'blog'
+  | 'offers'
+  | 'about'
+  | 'contact'
+  | 'lg-monitors'
+  | 'asus-monitors'
+  | 'samsung-monitors';
+
+export type CardSection = 
+  | 'homepage-hero' 
+  | 'category-card' 
+  | 'product-card' 
+  | 'promo-banner' 
+  | 'value-proposition' 
+  | 'store-location' 
+  | 'custom';
+
+export type CardStatus = 'published' | 'draft';
+export type CardDevice = 'all' | 'desktop' | 'mobile';
+
+export interface SiteCard {
+  _id?: string;
+  id: string;
+  name: string;
+  section: CardSection;
+  title: string;
+  subtitle?: string;
+  description?: string;
+  badge?: string;
+  tagline?: string;
+  price?: number;
+  discountPrice?: number;
+  currency?: string;
+  image?: string;
+  images?: string[];
+  icon?: string;
+  buttonText?: string;
+  buttonLink?: string;
+  buttonTarget?: '_self' | '_blank';
+  secondaryButtonText?: string;
+  secondaryButtonLink?: string;
+  secondaryButtonTarget?: '_self' | '_blank';
+  backgroundColor?: string;
+  textColor?: string;
+  accentColor?: string;
+  borderColor?: string;
+  borderWidth?: string;
+  borderRadius?: string;
+  shadow?: string;
+  padding?: string;
+  cardHeight?: string;
+  titleSize?: string;
+  titleWeight?: string;
+  displayOrder: number;
+  columnsSpan?: number;
+  isVisible: boolean;
+  status: CardStatus;
+  targetDevice?: CardDevice;
+  targetEntityId?: string;
+  customClasses?: string;
+  metadata?: Record<string, any>;
+  createdAt?: string;
+  updatedAt?: string;
+}
