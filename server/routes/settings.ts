@@ -100,25 +100,32 @@ settingsRouter.get('/', async (_req: Request, res: Response) => {
 settingsRouter.put('/', verifyAdminToken, async (req: Request, res: Response) => {
   try {
     const updates = req.body || {};
-    const local = getLocalSettings();
+    await connectDB();
+    let currentSettings: any = getLocalSettings();
+    if (isDbConnected()) {
+      const existingDoc = await SiteSettings.findOne().lean();
+      if (existingDoc) {
+        currentSettings = existingDoc;
+      }
+    }
+
     const merged = {
-      navbar: { ...local.navbar, ...(updates.navbar || {}) },
-      cardAppearance: { ...local.cardAppearance, ...(updates.cardAppearance || {}) },
-      homepageSections: updates.homepageSections || local.homepageSections,
-      footer: { ...local.footer, ...(updates.footer || {}) },
+      navbar: { ...(currentSettings.navbar || {}), ...(updates.navbar || {}) },
+      cardAppearance: { ...(currentSettings.cardAppearance || {}), ...(updates.cardAppearance || {}) },
+      homepageSections: updates.homepageSections || currentSettings.homepageSections,
+      footer: { ...(currentSettings.footer || {}), ...(updates.footer || {}) },
       updatedAt: new Date(),
     };
 
     saveLocalSettings(merged);
 
-    await connectDB();
     let savedDoc: any = merged;
     if (isDbConnected()) {
       try {
         savedDoc = await SiteSettings.findOneAndUpdate(
           {},
           { $set: merged },
-          { upsert: true, returnDocument: 'after', runValidators: true }
+          { upsert: true, returnDocument: 'after', runValidators: false }
         );
       } catch (dbErr: any) {
         console.warn('[DB Settings Update Warning]:', dbErr.message);

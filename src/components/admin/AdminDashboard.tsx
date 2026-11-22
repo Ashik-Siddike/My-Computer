@@ -136,8 +136,10 @@ export const CATEGORY_DEFINITIONS = [
 export const AdminDashboard: React.FC = () => {
   const { addToast, setCurrentView, refreshProducts: refreshStoreProducts } = useStore();
 
-  // Authentication State - Fresh authentication strictly required every time admin panel is entered.
-  const [token, setToken] = useState<string | null>(null);
+  // Authentication State - Initialized from active session if present
+  const [token, setToken] = useState<string | null>(() => {
+    return typeof window !== 'undefined' ? (sessionStorage.getItem('mc_admin_token') || localStorage.getItem('mc_admin_token')) : null;
+  });
   const [adminUser, setAdminUser] = useState<{ id?: string; email: string; name: string; username?: string; role?: string } | null>(null);
   const [loginIdentifier, setLoginIdentifier] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
@@ -230,19 +232,13 @@ export const AdminDashboard: React.FC = () => {
   const [deleteTargetProduct, setDeleteTargetProduct] = useState<any | null>(null);
   const [deletingProduct, setDeletingProduct] = useState(false);
 
-  // Fresh authentication strictly required every time admin panel is opened. Never persist or auto-login.
+  // Verify existing session on initial load
   useEffect(() => {
-    localStorage.removeItem('mc_admin_token');
-    sessionStorage.removeItem('mc_admin_token');
-    setToken(null);
-    setAdminUser(null);
-
-    return () => {
-      // Clear all tokens when leaving the admin panel
-      localStorage.removeItem('mc_admin_token');
-      sessionStorage.removeItem('mc_admin_token');
-    };
-  }, []);
+    const existingToken = sessionStorage.getItem('mc_admin_token') || localStorage.getItem('mc_admin_token');
+    if (existingToken && !token) {
+      setToken(existingToken);
+    }
+  }, [token]);
 
   /* ── 1. Check or Verify Token ─────────────────────────────────────────── */
   useEffect(() => {
@@ -291,10 +287,9 @@ export const AdminDashboard: React.FC = () => {
         return;
       }
 
-      // Retain token in sessionStorage strictly for active sub-modals during current session only
-      // Never save in localStorage so every admin visit requires username & password
+      // Save token in both sessionStorage and localStorage for seamless multi-tab management
       sessionStorage.setItem('mc_admin_token', data.token);
-      localStorage.removeItem('mc_admin_token');
+      localStorage.setItem('mc_admin_token', data.token);
       setToken(data.token);
       setAdminUser(data.admin);
       setSettingsForm(prev => ({

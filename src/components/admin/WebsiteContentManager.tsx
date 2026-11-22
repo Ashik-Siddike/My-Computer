@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useStore } from '../../context/StoreContext';
+import { resolveImageUrl } from '../../lib/api';
 import {
   Upload,
   Image as ImageIcon,
@@ -133,14 +134,14 @@ export const WebsiteContentManager: React.FC<WebsiteContentManagerProps> = ({
 
   // Handle Logo Upload from Computer
   const handleLogoUpload = async (file: File) => {
-    if (!token) {
-      addToast('Error', 'Admin authentication required', 'warning');
+    const authToken = token || sessionStorage.getItem('mc_admin_token') || localStorage.getItem('mc_admin_token');
+    if (!authToken) {
+      addToast('Error', 'Admin authentication required. Please log in.', 'warning');
       return;
     }
     setLogoUploading(true);
 
     try {
-      const authToken = token || sessionStorage.getItem('mc_admin_token') || localStorage.getItem('mc_admin_token');
       const formData = new FormData();
       formData.append('image', file);
 
@@ -151,7 +152,7 @@ export const WebsiteContentManager: React.FC<WebsiteContentManagerProps> = ({
       });
 
       const data = await res.json();
-      const chosenUrl = data.url || data.fileUrl || data.dataUri;
+      const chosenUrl = data.fileUrl || data.url || data.dataUri;
       if (res.ok && data.success && chosenUrl) {
         setNavbarForm(prev => ({ ...prev, logoUrl: chosenUrl }));
         addToast('Logo Uploaded', 'Custom logo saved to server. Remember to click "Save Navbar Settings".');
@@ -316,10 +317,14 @@ export const WebsiteContentManager: React.FC<WebsiteContentManagerProps> = ({
                 <div className="w-24 h-16 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center p-2 overflow-hidden shrink-0">
                   {navbarForm.logoUrl ? (
                     <img
-                      src={navbarForm.logoUrl}
+                      src={resolveImageUrl(navbarForm.logoUrl, '/logo.png')}
                       alt="Logo preview"
                       style={{ maxHeight: `${navbarForm.logoHeight}px` }}
                       className="object-contain"
+                      onError={e => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = '/logo.png';
+                      }}
                     />
                   ) : (
                     <ImageIcon className="w-6 h-6 text-slate-400" />
@@ -430,12 +435,13 @@ export const WebsiteContentManager: React.FC<WebsiteContentManagerProps> = ({
                   {/* Brand & Logo */}
                   <div className="flex items-center gap-3">
                     <img
-                      src={navbarForm.logoUrl}
+                      src={resolveImageUrl(navbarForm.logoUrl, '/logo.png')}
                       alt={navbarForm.brandName}
                       style={{ height: `${navbarForm.logoHeight}px` }}
                       className="object-contain"
                       onError={e => {
-                        (e.currentTarget as any).src = 'https://placehold.co/120x40/0f172a/ffffff?text=MY+COMPUTER';
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = '/logo.png';
                       }}
                     />
                     <div>

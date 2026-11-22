@@ -247,7 +247,7 @@ adminRouter.get('/me', verifyAdminToken, async (req: AuthenticatedRequest, res: 
 });
 
 // PUT /api/admin/credentials - Update admin username, email, and password
-adminRouter.put('/credentials', verifyAdminToken, async (req: AuthenticatedRequest, res: Response) => {
+const handleUpdateAdminCredentials = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { username, name, email, currentPassword, newPassword } = req.body;
     await connectDB();
@@ -318,7 +318,10 @@ adminRouter.put('/credentials', verifyAdminToken, async (req: AuthenticatedReque
     console.error('[Admin Credentials Update Error]:', error);
     res.status(500).json({ success: false, error: error.message || 'Failed to update credentials' });
   }
-});
+};
+
+adminRouter.put('/credentials', verifyAdminToken, handleUpdateAdminCredentials);
+adminRouter.put('/settings', verifyAdminToken, handleUpdateAdminCredentials);
 
 // GET /api/admin/stats - Live metrics for Admin Dashboard Overview
 adminRouter.get('/stats', verifyAdminToken, async (_req: AuthenticatedRequest, res: Response) => {

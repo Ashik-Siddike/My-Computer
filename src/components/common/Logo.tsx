@@ -1,5 +1,6 @@
 import React from 'react';
 import { useOptionalStore } from '../../context/StoreContext';
+import { resolveImageUrl } from '../../lib/api';
 
 interface LogoProps {
   className?: string;
@@ -58,14 +59,19 @@ export const Logo: React.FC<LogoProps> = ({
   const { hClass, maxW } = sizeMap[size];
 
   if (customLogoUrl) {
+    const resolvedLogo = resolveImageUrl(customLogoUrl, variant === 'dark' ? '/logo-dark.png' : '/logo.png');
     return (
       <div
         className={`inline-flex items-center justify-center overflow-hidden select-none flex-shrink-0 ${className}`}
         style={{ isolation: 'isolate' }}
       >
         <img
-          src={customLogoUrl}
+          src={resolvedLogo}
           alt="My Computer"
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = variant === 'dark' ? '/logo-dark.png' : '/logo.png';
+          }}
           className="w-auto object-contain transition-transform duration-200 hover:scale-105"
           style={{ height: `${customLogoHeight}px`, maxWidth: maxW }}
         />

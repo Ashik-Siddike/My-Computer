@@ -13,27 +13,28 @@ if (!fs.existsSync(UPLOADS_DIR)) {
   fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }
 
-async function saveMediaToDb(filename: string, mimetype: string, size: number, dataUri: string, base64: string) {
+async function saveMediaToDb(filename: string, mimetype: string, size: number, base64?: string) {
   try {
     await connectDB();
     if (isDbConnected() && mongoose.connection.db) {
+      const updateData: any = {
+        filename,
+        mimetype,
+        size,
+        updatedAt: new Date(),
+      };
+      // Keep MongoDB documents under 12MB limit to strictly avoid BSON 16MB limit crashes
+      if (base64 && size <= 12 * 1024 * 1024) {
+        updateData.buffer = base64;
+      }
       await mongoose.connection.db.collection('uploaded_media').updateOne(
         { filename },
-        {
-          $set: {
-            filename,
-            mimetype,
-            size,
-            dataUri,
-            buffer: base64,
-            createdAt: new Date(),
-          },
-        },
+        { $set: updateData },
         { upsert: true }
       );
     }
-  } catch (err) {
-    console.warn('[saveMediaToDb Notice]:', err);
+  } catch (err: any) {
+    console.warn('[saveMediaToDb Notice]:', err.message);
   }
 }
 
@@ -43,19 +44,25 @@ const storage = multer.diskStorage({
     cb(null, UPLOADS_DIR);
   },
   filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase() || '.png';
-    const cleanExt = ['.jpg', '.jpeg', '.png', '.webp', '.svg', '.gif'].includes(ext) ? ext : '.png';
+    const originalExt = path.extname(file.originalname).toLowerCase();
+    const cleanExt = ['.jpg', '.jpeg', '.png', '.webp', '.svg', '.gif', '.avif', '.jfif', '.bmp', '.ico'].includes(originalExt)
+      ? originalExt
+      : (file.mimetype === 'image/jpeg' ? '.jpg' : file.mimetype === 'image/webp' ? '.webp' : '.png');
     const safeName = `mc-${Date.now()}-${Math.random().toString(36).substring(2, 8)}${cleanExt}`;
     cb(null, safeName);
   },
 });
 
 const fileFilter = (_req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
-  const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/gif'];
-  if (allowed.includes(file.mimetype.toLowerCase())) {
+  const mime = (file.mimetype || '').toLowerCase();
+  const ext = path.extname(file.originalname).toLowerCase();
+  const isImageMime = mime.startsWith('image/');
+  const isImageExt = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg', '.avif', '.jfif', '.bmp', '.ico'].includes(ext);
+
+  if (isImageMime || isImageExt) {
     cb(null, true);
   } else {
-    cb(new Error(`Invalid file type (${file.mimetype}). Only JPG, PNG, WebP, GIF, and SVG are allowed.`));
+    cb(new Error(`Invalid file type (${file.mimetype || 'unknown'}). Please upload an image file.`));
   }
 };
 
@@ -91,7 +98,7 @@ uploadRouter.post('/', verifyAdminToken, (req: Request, res: Response) => {
         const dataUri = raw.includes(';base64,') ? raw : `data:${mimeType};base64,${base64}`;
         const fileUrl = `/uploads/${cleanName}`;
 
-        saveMediaToDb(cleanName, mimeType, stats.size, dataUri, base64).catch(e => console.warn('[Upload DB save error]:', e));
+        saveMediaToDb(cleanName, mimeType, stats.size, base64).catch(e => console.warn('[Upload DB save error]:', e));
 
         return res.status(201).json({
           success: true,
@@ -134,12 +141,18 @@ uploadRouter.post('/', verifyAdminToken, (req: Request, res: Response) => {
     try {
       const processed = [];
       for (const f of files) {
-        const buffer = fs.readFileSync(f.path);
-        const base64 = buffer.toString('base64');
-        const dataUri = `data:${f.mimetype};base64,${base64}`;
         const fileUrl = `/uploads/${f.filename}`;
-
-        await saveMediaToDb(f.filename, f.mimetype, f.size, dataUri, base64);
+        let dataUri = '';
+        try {
+          const buffer = fs.readFileSync(f.path);
+          const base64 = buffer.toString('base64');
+          dataUri = `data:${f.mimetype};base64,${base64}`;
+          saveMediaToDb(f.filename, f.mimetype, f.size, base64).catch(e =>
+            console.warn('[Upload DB save background notice]:', e.message)
+          );
+        } catch (e: any) {
+          console.warn('[Upload read error]:', e.message);
+        }
 
         processed.push({
           url: fileUrl,

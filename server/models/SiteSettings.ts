@@ -79,4 +79,4 @@ const siteSettingsSchema = new Schema<ISiteSettings>(
   { timestamps: true }
 );
 
-export const SiteSettings = mongoose.model<ISiteSettings>('SiteSettings', siteSettingsSchema);
+export const SiteSettings = mongoose.models.SiteSettings || mongoose.model<ISiteSettings>('SiteSettings', siteSettingsSchema);

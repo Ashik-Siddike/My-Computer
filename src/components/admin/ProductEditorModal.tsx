@@ -153,8 +153,9 @@ export const ProductEditorModal: React.FC<ProductEditorModalProps> = ({
   const handleFileUpload = async (file: File) => {
     if (!file) return;
 
-    if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'].includes(file.type)) {
-      setErrorMessage('Invalid file type. Please upload JPG, PNG, or WebP images.');
+    const isImage = (file.type && file.type.startsWith('image/')) || /\.(jpe?g|png|webp|gif|svg|avif|jfif|bmp)$/i.test(file.name);
+    if (!isImage) {
+      setErrorMessage('Invalid file type. Please upload an image file (JPG, PNG, WebP, etc.).');
       return;
     }
 

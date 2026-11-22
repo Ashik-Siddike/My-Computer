@@ -144,7 +144,15 @@ export const ProductDetailPage: React.FC = () => {
                   }`}
                   aria-label={`View thumbnail ${idx + 1}`}
                 >
-                  <img src={img} alt="" className="w-full h-full object-contain" />
+                  <img
+                    src={resolveImageUrl(img)}
+                    alt=""
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = 'https://images.unsplash.com/photo-1546435770-a3e426bf472b?q=80&w=800&auto=format&fit=crop';
+                    }}
+                    className="w-full h-full object-contain"
+                  />
                 </button>
               ))}
             </div>

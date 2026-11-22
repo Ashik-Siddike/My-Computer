@@ -151,8 +151,9 @@ export const CardManager: React.FC<CardManagerProps> = ({ token }) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      addToast('Invalid File', 'Please select a valid image file (PNG, JPG, WEBP).', 'warning');
+    const isImage = (file.type && file.type.startsWith('image/')) || /\.(jpe?g|png|webp|gif|svg|avif|jfif|bmp)$/i.test(file.name);
+    if (!isImage) {
+      addToast('Invalid File', 'Please select a valid image file (PNG, JPG, WEBP, SVG, etc.).', 'warning');
       return;
     }
 
@@ -220,14 +221,20 @@ export const CardManager: React.FC<CardManagerProps> = ({ token }) => {
     }
   }, [isEditorOpen, deleteTarget]);
 
+  // Auth token resolver with session fallback
+  const getAuthToken = useCallback(() => {
+    return token || sessionStorage.getItem('mc_admin_token') || localStorage.getItem('mc_admin_token') || '';
+  }, [token]);
+
   // Fetch all cards for admin
   const fetchAdminCards = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
+      const authToken = getAuthToken();
       const res = await fetch('/api/cards/all', {
         headers: {
-          Authorization: `Bearer ${token || ''}`,
+          Authorization: `Bearer ${authToken}`,
         },
       });
       const data = await res.json();
@@ -291,7 +298,7 @@ export const CardManager: React.FC<CardManagerProps> = ({ token }) => {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token || ''}`,
+          Authorization: `Bearer ${getAuthToken()}`,
         },
         body: JSON.stringify({ isVisible: nextState }),
       });
@@ -326,7 +333,7 @@ export const CardManager: React.FC<CardManagerProps> = ({ token }) => {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token || ''}`,
+          Authorization: `Bearer ${getAuthToken()}`,
         },
         body: JSON.stringify({ displayOrder: newOrder }),
       });
@@ -358,7 +365,7 @@ export const CardManager: React.FC<CardManagerProps> = ({ token }) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token || ''}`,
+          Authorization: `Bearer ${getAuthToken()}`,
         },
         body: JSON.stringify(clonedCard),
       });
@@ -424,7 +431,7 @@ export const CardManager: React.FC<CardManagerProps> = ({ token }) => {
         method,
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token || ''}`,
+          Authorization: `Bearer ${getAuthToken()}`,
         },
         body: JSON.stringify(payload),
       });
@@ -457,7 +464,7 @@ export const CardManager: React.FC<CardManagerProps> = ({ token }) => {
       const res = await fetch(`/api/cards/${deleteTarget.id}`, {
         method: 'DELETE',
         headers: {
-          Authorization: `Bearer ${token || ''}`,
+          Authorization: `Bearer ${getAuthToken()}`,
         },
       });
       const data = await res.json();

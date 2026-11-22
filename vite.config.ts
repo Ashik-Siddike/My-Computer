@@ -15,6 +15,11 @@ function apiServerPlugin(): Plugin {
         }
       });
 
+      // Pre-warm backend SSR module on Vite startup for zero-latency multipart stream consumption
+      server.ssrLoadModule('/server/app.ts').then(mod => {
+        cachedApp = mod.app;
+      }).catch(e => console.warn('[Vite Pre-warm Notice]:', e));
+
       server.middlewares.use(async (req, res, next) => {
         if (req.url && (
           req.url === '/api' ||
